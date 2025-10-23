@@ -1,0 +1,37 @@
+Cabal-Version:  3.0
+Name:           particle-PDG
+Version:        0.1
+Synopsis:       Particle data from PDG represented as haskell library
+
+
+License:        BSD-3-Clause
+License-File:   LICENSE
+Author:         Aleksey Khudyakov <alexey.skladnoy@gmail.com>
+Maintainer:     Aleksey Khudyakov <alexey.skladnoy@gmail.com>
+Category:       Data
+Build-Type:     Simple
+
+common extensions
+  Default-extensions: NoPolyKinds
+                      --
+                      NoFieldSelectors
+                      OverloadedRecordDot
+                      DuplicateRecordFields
+                      --
+                      DataKinds
+                      DerivingStrategies
+                      DerivingVia
+                      LambdaCase
+                      ViewPatterns
+                      RoleAnnotations
+
+Library
+  import:             extensions
+  Ghc-options:        -Wall -O2
+  Default-Language:   GHC2021
+  --
+  Build-Depends:    base                >=4.12 && <5
+                  , text
+  Exposed-modules:
+    HEP.PDG.Class
+    HEP.PDG.TH
