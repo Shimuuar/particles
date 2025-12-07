@@ -137,31 +137,67 @@ data Name = Name
 
 name2hask :: Int -> Text -> Name -> String
 name2hask n sign nm = case nm.name of
-  "p" | n > 0     -> "Proton"
-      | otherwise -> "Antiproton"
-  "n" | n > 0     -> "Neutron"
-      | otherwise -> "Antineutron"
-  "N" | "+" <- sign -> if | n > 0     -> "N_Plus"  ++ suffix
-                          | otherwise -> "N_Minus" ++ suffix
-      | "0" <- sign -> if | n > 0     -> "N0"      ++ suffix
-                          | otherwise -> "AntiN0"  ++ suffix
-  "Lambda" | n > 0     -> "Lambda" ++ suffix
-           | otherwise -> "AntiLambda" ++ suffix
+  -- Baryons
+  "p" | n > 0       -> "Proton"
+      | otherwise   -> "Antiproton"
+  "n" | n > 0       -> "Neutron"
+      | otherwise   -> "Antineutron"
+  "N" | "+" <- sign -> "N_" ++ sign_name_anti ++ suffix
+      | "0" <- sign -> anti $ "N0" ++ suffix
+  "Lambda" -> anti $ "Lambda" ++                      suffix
+  "Delta"  -> anti $ "Delta"  ++         sign_name ++ suffix
+  "Sigma"  -> anti $ "Sigma"  ++ star ++ sign_name ++ suffix
+  "Xi"     -> anti $ "Xi"     ++ sign_name ++ star ++ suffix
   -- Mesons
-  "pi" | "+" <- sign -> if | n > 0     -> "PiPlus"  ++ suffix
-                           | otherwise -> "PiMinus" ++ suffix
-       | "0" <- sign -> "Pi0" ++ suffix
-  --     , n > 0       -> "
-  --
+  "pi" -> "Pi" ++ sign_name_anti ++ suffix
+    -- | "+" <- sign -> if | n > 0     -> "PiPlus"  ++ suffix
+    --                     | otherwise -> "PiMinus" ++ suffix
+    -- | "0" <- sign -> "Pi0" ++ suffix
+  "eta" -> "Eta" ++ full_suffix
+  "phi" -> "Phi" ++ full_suffix
+  "rho"
+    | "+" <- sign -> "Rho" ++ sign_name_anti ++  suffix
+    | "0" <- sign -> "Rho0" ++ suffix
+  "K"
+    | "+" <- sign -> "K" ++ star ++ sign_name_anti ++ suffix
+    | "0" <- sign -> anti $ "K" ++ star ++ sign_name_anti ++ suffix
+  "D"
+    | "+" <- sign -> "D" ++ star ++ sign_name_anti ++ suffix
+    | "0" <- sign -> anti $ "D" ++ star ++ sign_name_anti ++ suffix
+  "B"
+    | "+" <- sign -> "B" ++ star ++ sign_name_anti ++ suffix
+    | "0" <- sign -> anti $ "B" ++ star ++ sign_name_anti ++ suffix
+  "Upsilon"
+    | n > 0     -> "Upsilon"     ++ suffix
+    | otherwise -> "AntiUpsilon" ++ suffix
+  -- Mesons using -Bar naming convention
   _ -> show nm
   where
-    suffix = maybe "" ('_':) nm.s1
-          ++ maybe "" ('_':) nm.s2
+    anti | n > 0     = id
+         | otherwise = ("Anti"++)
+    sign_name_anti = case (sign, n>0) of
+      ("0", _)     -> "0"
+      ("+", True)  -> "Plus"
+      ("+", False) -> "Minus"
+    sign_name = case sign of
+      "0"  -> "0"
+      "+"  -> "Plus"
+      "++" -> "PlusPlus"
+      "-"  -> "Minus"
+      "--" -> "MinusMinus"
+      
+    full_suffix = star ++ suffix
+    star
+      = (if nm.star  then "Star" else "")
+     ++ (if nm.prime then "'"    else "")
+    suffix
+      = maybe "" ('_':) nm.s1
+     ++ maybe "" ('_':) nm.s2
 
 
 parseName :: RP.ReadP Name
 parseName = do
-  nm    <- RP.munch1 isAlpha
+  nm    <- RP.munch1 (\c -> isAlpha c || c =='/')
   s1    <- optional (RP.char '(' *> RP.munch1 isAlphaNum <* RP.char ')')
   prime <- not . null <$> RP.munch (=='\'')
   star  <- not . null <$> RP.munch (=='*')
