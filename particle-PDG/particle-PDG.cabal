@@ -31,7 +31,9 @@ Library
   Default-Language:   GHC2021
   --
   Build-Depends:    base                >=4.12 && <5
+                  , template-haskell
                   , text
   Exposed-modules:
     HEP.PDG.Class
     HEP.PDG.TH
+    HEP.PDG.Parser
