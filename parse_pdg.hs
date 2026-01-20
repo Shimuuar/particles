@@ -120,6 +120,7 @@ haskName = \cases
   -310 "K(S)" _ -> Just "AntiKShort"
   130  "K(L)" _ -> Just "KLong"
   -130 "K(L)" _ -> Just "AntiKLong"
+  443  "J/psi(1S)" _ -> Just "JPsi"
   i nm sign -> case RP.readP_to_S (parseName <* RP.eof) (T.unpack nm) of
     (x,""):_ -> Just $ name2hask i sign x
     _        -> Nothing
@@ -144,17 +145,22 @@ name2hask n sign nm = case nm.name of
       | otherwise   -> "Antineutron"
   "N" | "+" <- sign -> "N_" ++ sign_name_anti ++ suffix
       | "0" <- sign -> anti $ "N0" ++ suffix
-  "Lambda" -> anti $ "Lambda" ++                      suffix
-  "Delta"  -> anti $ "Delta"  ++         sign_name ++ suffix
-  "Sigma"  -> anti $ "Sigma"  ++ star ++ sign_name ++ suffix
-  "Xi"     -> anti $ "Xi"     ++ sign_name ++ star ++ suffix
+  "Lambda" -> anti $ "Lambda"      ++                      suffix
+  "Delta"  -> anti $ "Delta"       ++         sign_name ++ suffix
+  "Sigma"  -> anti $ "Sigma"       ++ star ++ sign_name ++ suffix
+  "Omega"  -> anti $ "OmegaBaryon" ++ star ++ sign_name ++ suffix
+  "Xi"     -> anti $ "Xi"          ++ star ++ sign_name ++ suffix
   -- Mesons
-  "pi" -> "Pi" ++ sign_name_anti ++ suffix
-    -- | "+" <- sign -> if | n > 0     -> "PiPlus"  ++ suffix
-    --                     | otherwise -> "PiMinus" ++ suffix
-    -- | "0" <- sign -> "Pi0" ++ suffix
-  "eta" -> "Eta" ++ full_suffix
-  "phi" -> "Phi" ++ full_suffix
+  "pi"    -> "Pi" ++ sign_name_anti ++ suffix
+  "eta"   -> "Eta" ++ full_suffix
+  "phi"   -> "Phi" ++ full_suffix
+  "omega" -> "OmegaMeson" ++ full_suffix
+  "a"     -> "Meson_a" ++ full_suffix
+  "b"     -> "Meson_b" ++ full_suffix
+  "f"     -> "Meson_f" ++ full_suffix
+  "h"     -> "Meson_h" ++ full_suffix
+  "chi"   -> "Chi" ++ full_suffix
+  "psi"   -> "Psi" ++ full_suffix
   "rho"
     | "+" <- sign -> "Rho" ++ sign_name_anti ++  suffix
     | "0" <- sign -> "Rho0" ++ suffix
@@ -171,7 +177,7 @@ name2hask n sign nm = case nm.name of
     | n > 0     -> "Upsilon"     ++ suffix
     | otherwise -> "AntiUpsilon" ++ suffix
   -- Mesons using -Bar naming convention
-  _ -> show nm
+  _ -> ">> " ++ show nm
   where
     anti | n > 0     = id
          | otherwise = ("Anti"++)
@@ -227,9 +233,11 @@ go = do
       i
       r.name
       r.sign
-      (maybe "" id $ haskName i r.name r.sign)
+      name
     | r <- xs
     , i <- let i0 = read $ T.unpack r.id in if hasAnti i0 then [i0,-i0] else [i0]
+    , let name = maybe "" id $ haskName i r.name r.sign
+    , head name == '>'
     ]
 
   
